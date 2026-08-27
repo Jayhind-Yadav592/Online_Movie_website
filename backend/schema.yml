@@ -1,0 +1,1976 @@
+openapi: 3.0.3
+info:
+  title: CineVerse API
+  version: 1.0.0
+  description: Enterprise Netflix Clone API
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: auth_profile_update
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: auth_profile_partial_update
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/genres/:
+    get:
+      operationId: genres_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - genres
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGenreList'
+          description: ''
+  /api/genres/{id}/:
+    get:
+      operationId: genres_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this genre.
+        required: true
+      tags:
+      - genres
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Genre'
+          description: ''
+  /api/languages/:
+    get:
+      operationId: languages_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - languages
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLanguageList'
+          description: ''
+  /api/languages/{id}/:
+    get:
+      operationId: languages_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this language.
+        required: true
+      tags:
+      - languages
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Language'
+          description: ''
+  /api/movies/:
+    get:
+      operationId: movies_list
+      parameters:
+      - in: query
+        name: genres__slug
+        schema:
+          type: string
+      - in: query
+        name: language__code
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: release_date
+        schema:
+          type: string
+          format: date
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - movies
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMovieListList'
+          description: ''
+  /api/movies/{slug}/:
+    get:
+      operationId: movies_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - movies
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovieDetail'
+          description: ''
+  /api/search/:
+    get:
+      operationId: search_retrieve
+      tags:
+      - search
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/series/:
+    get:
+      operationId: series_list
+      parameters:
+      - in: query
+        name: genres__slug
+        schema:
+          type: string
+      - in: query
+        name: language__code
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: release_date
+        schema:
+          type: string
+          format: date
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - series
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSeriesListList'
+          description: ''
+  /api/series/{slug}/:
+    get:
+      operationId: series_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - series
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeriesDetail'
+          description: ''
+  /api/subscriptions/checkout/:
+    post:
+      operationId: subscriptions_checkout_create
+      tags:
+      - subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/subscriptions/my-subscription/:
+    get:
+      operationId: subscriptions_my_subscription_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubscriptionList'
+          description: ''
+  /api/subscriptions/my-subscription/{id}/:
+    get:
+      operationId: subscriptions_my_subscription_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - subscriptions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/user/history/:
+    get:
+      operationId: user_history_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWatchHistoryList'
+          description: ''
+    post:
+      operationId: user_history_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchHistory'
+          description: ''
+  /api/user/history/{id}/:
+    get:
+      operationId: user_history_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchHistory'
+          description: ''
+    put:
+      operationId: user_history_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WatchHistory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchHistory'
+          description: ''
+    patch:
+      operationId: user_history_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchHistory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WatchHistory'
+          description: ''
+    delete:
+      operationId: user_history_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/user/reviews/:
+    get:
+      operationId: user_reviews_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: user_reviews_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/user/reviews/{id}/:
+    get:
+      operationId: user_reviews_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    put:
+      operationId: user_reviews_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Review'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Review'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: user_reviews_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReview'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: user_reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this review.
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/user/search-history/:
+    get:
+      operationId: user_search_history_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSearchHistoryList'
+          description: ''
+    post:
+      operationId: user_search_history_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistory'
+          description: ''
+  /api/user/search-history/{id}/:
+    get:
+      operationId: user_search_history_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistory'
+          description: ''
+    put:
+      operationId: user_search_history_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SearchHistory'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistory'
+          description: ''
+    patch:
+      operationId: user_search_history_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSearchHistory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSearchHistory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSearchHistory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistory'
+          description: ''
+    delete:
+      operationId: user_search_history_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/user/watchlist/:
+    get:
+      operationId: user_watchlist_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWatchlistList'
+          description: ''
+    post:
+      operationId: user_watchlist_create
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watchlist'
+          description: ''
+  /api/user/watchlist/{id}/:
+    get:
+      operationId: user_watchlist_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watchlist'
+          description: ''
+    put:
+      operationId: user_watchlist_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Watchlist'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watchlist'
+          description: ''
+    patch:
+      operationId: user_watchlist_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchlist'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchlist'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWatchlist'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Watchlist'
+          description: ''
+    delete:
+      operationId: user_watchlist_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    CastMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        photo:
+          type: string
+          format: uri
+          nullable: true
+        biography:
+          type: string
+          nullable: true
+      required:
+      - id
+      - name
+    Episode:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        episode_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        thumbnail:
+          type: string
+          format: uri
+        video_url:
+          type: string
+          format: uri
+          maxLength: 500
+        duration:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Duration in minutes
+        release_date:
+          type: string
+          format: date
+        season:
+          type: integer
+      required:
+      - description
+      - duration
+      - episode_number
+      - id
+      - release_date
+      - season
+      - thumbnail
+      - title
+      - video_url
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 100
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+      required:
+      - id
+      - name
+    Language:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        code:
+          type: string
+          maxLength: 10
+      required:
+      - code
+      - id
+      - name
+    MovieDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+          readOnly: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/Language'
+          readOnly: true
+        cast:
+          type: array
+          items:
+            $ref: '#/components/schemas/CastMember'
+          readOnly: true
+        poster:
+          type: string
+          readOnly: true
+        backdrop:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 255
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+        trailer_url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        video_url:
+          type: string
+          format: uri
+          maxLength: 500
+        release_date:
+          type: string
+          format: date
+        runtime:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Runtime in minutes
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        director:
+          type: string
+          nullable: true
+          maxLength: 255
+        certification:
+          type: string
+          nullable: true
+          maxLength: 50
+        featured:
+          type: boolean
+        trending:
+          type: boolean
+        published:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - backdrop
+      - cast
+      - created_at
+      - description
+      - genres
+      - id
+      - language
+      - poster
+      - release_date
+      - runtime
+      - title
+      - updated_at
+      - video_url
+    MovieList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 255
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        poster:
+          type: string
+          readOnly: true
+        backdrop:
+          type: string
+          readOnly: true
+        release_date:
+          type: string
+          format: date
+        runtime:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Runtime in minutes
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        language:
+          allOf:
+          - $ref: '#/components/schemas/Language'
+          readOnly: true
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+          readOnly: true
+        featured:
+          type: boolean
+        trending:
+          type: boolean
+        certification:
+          type: string
+          nullable: true
+          maxLength: 50
+      required:
+      - backdrop
+      - genres
+      - id
+      - language
+      - poster
+      - release_date
+      - runtime
+      - title
+    PaginatedGenreList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+    PaginatedLanguageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Language'
+    PaginatedMovieListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieList'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedSearchHistoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchHistory'
+    PaginatedSeriesListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeriesList'
+    PaginatedSubscriptionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+    PaginatedWatchHistoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WatchHistory'
+    PaginatedWatchlistList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Watchlist'
+    PatchedReview:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingEnum'
+          minimum: 0
+          maximum: 9223372036854775807
+        review:
+          type: string
+        user_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSearchHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        query:
+          type: string
+          maxLength: 255
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/Subscription'
+          readOnly: true
+    PatchedWatchHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+          nullable: true
+        episode:
+          type: integer
+          nullable: true
+        movie_details:
+          allOf:
+          - $ref: '#/components/schemas/MovieList'
+          readOnly: true
+        progress_seconds:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        duration_seconds:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        completed:
+          type: boolean
+        last_watched:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedWatchlist:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+          nullable: true
+        movie_details:
+          allOf:
+          - $ref: '#/components/schemas/MovieList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PlanEnum:
+      enum:
+      - FREE
+      - MOBILE
+      - BASIC
+      - STANDARD
+      - PREMIUM
+      type: string
+      description: |-
+        * `FREE` - Free
+        * `MOBILE` - Mobile - ₹149
+        * `BASIC` - Basic - ₹199
+        * `STANDARD` - Standard - ₹499
+        * `PREMIUM` - Premium - ₹649
+    RatingEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      type: integer
+      description: |-
+        * `1` - 1
+        * `2` - 2
+        * `3` - 3
+        * `4` - 4
+        * `5` - 5
+        * `6` - 6
+        * `7` - 7
+        * `8` - 8
+        * `9` - 9
+        * `10` - 10
+    Register:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingEnum'
+          minimum: 0
+          maximum: 9223372036854775807
+        review:
+          type: string
+        user_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - movie
+      - rating
+      - review
+      - user_name
+    RoleEnum:
+      enum:
+      - USER
+      - ADMIN
+      type: string
+      description: |-
+        * `USER` - User
+        * `ADMIN` - Admin
+    SearchHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        query:
+          type: string
+          maxLength: 255
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - query
+      - timestamp
+    Season:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        episodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Episode'
+          readOnly: true
+        season_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        series:
+          type: integer
+      required:
+      - episodes
+      - id
+      - season_number
+      - series
+    SeriesDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+          readOnly: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/Language'
+          readOnly: true
+        cast:
+          type: array
+          items:
+            $ref: '#/components/schemas/CastMember'
+          readOnly: true
+        seasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Season'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 255
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        description:
+          type: string
+        poster:
+          type: string
+          format: uri
+        backdrop:
+          type: string
+          format: uri
+        trailer_url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        release_date:
+          type: string
+          format: date
+        director:
+          type: string
+          nullable: true
+          maxLength: 255
+        published:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - backdrop
+      - cast
+      - created_at
+      - description
+      - genres
+      - id
+      - language
+      - poster
+      - release_date
+      - seasons
+      - title
+      - updated_at
+    SeriesList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        slug:
+          oneOf:
+          - type: string
+            maxLength: 255
+            pattern: ^[-a-zA-Z0-9_]+$
+          - type: string
+            maxLength: 0
+        poster:
+          type: string
+          format: uri
+        backdrop:
+          type: string
+          format: uri
+        release_date:
+          type: string
+          format: date
+        language:
+          allOf:
+          - $ref: '#/components/schemas/Language'
+          readOnly: true
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+          readOnly: true
+      required:
+      - backdrop
+      - genres
+      - id
+      - language
+      - poster
+      - release_date
+      - title
+    StatusEnum:
+      enum:
+      - ACTIVE
+      - CANCELLED
+      - EXPIRED
+      type: string
+      description: |-
+        * `ACTIVE` - Active
+        * `CANCELLED` - Cancelled
+        * `EXPIRED` - Expired
+    Subscription:
+      type: object
+      properties:
+        plan:
+          $ref: '#/components/schemas/PlanEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        start_date:
+          type: string
+          format: date-time
+          readOnly: true
+        end_date:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - start_date
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        subscription:
+          allOf:
+          - $ref: '#/components/schemas/Subscription'
+          readOnly: true
+      required:
+      - email
+      - id
+      - subscription
+    WatchHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+          nullable: true
+        episode:
+          type: integer
+          nullable: true
+        movie_details:
+          allOf:
+          - $ref: '#/components/schemas/MovieList'
+          readOnly: true
+        progress_seconds:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        duration_seconds:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        completed:
+          type: boolean
+        last_watched:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - last_watched
+      - movie_details
+    Watchlist:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        movie:
+          type: integer
+          nullable: true
+        movie_details:
+          allOf:
+          - $ref: '#/components/schemas/MovieList'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - movie_details
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
